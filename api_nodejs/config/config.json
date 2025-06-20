@@ -1,0 +1,10 @@
+{
+  "development": {
+    "username": "rootadmin",
+    "password": "rootpassword123",
+    "database": "data_kepegawaian",
+    "host": "mra.rikzaafnan.my.id",
+    "port": 54320,
+    "dialect": "postgres"
+  }
+}
