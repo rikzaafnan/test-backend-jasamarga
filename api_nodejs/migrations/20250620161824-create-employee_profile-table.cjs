@@ -14,7 +14,7 @@ module.exports = {
         allowNull: false
       },
       place_of_birth: {
-        type: Sequelize.DATE,
+        type: Sequelize.STRING(255),
         allowNull: true
       },
       date_of_birth: {
