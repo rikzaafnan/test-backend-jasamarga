@@ -1,13 +1,51 @@
 import express, { json } from "express";
-import authMiddleware from "../middleware/auth-middleware.js";
 
 const apiRouter = new express();
-apiRouter.use(authMiddleware.authenticateAccessToken)
 
-apiRouter.get('/ping' ,(req, res, next) => {
+apiRouter.post('/employees' ,(req, res, next) => {
+    res.status(201).json({
+        status: "201",
+        message: "post employees",
+        content:[]
+    })
+})
+
+apiRouter.get('/employees' ,(req, res, next) => {
     res.status(200).json({
         status: "200",
-        message: "hello with JWT",
+        message: "get employees",
+        content:[]
+    })
+})
+
+apiRouter.get('/employees/:employeeID' ,(req, res, next) => {
+    res.status(200).json({
+        status: "200",
+        message: "get employe by id",
+        content:[]
+    })
+})
+
+apiRouter.put('/employees/:employeeID' ,(req, res, next) => {
+    res.status(200).json({
+        status: "200",
+        message: "update employe by id",
+        content:[]
+    })
+})
+
+apiRouter.delete('/employees/:employeeID' ,(req, res, next) => {
+    res.status(200).json({
+        status: "200",
+        message: "delete employe by id",
+        content:[]
+    })
+})
+
+apiRouter.get('/employe-reports' ,(req, res, next) => {
+    res.status(200).json({
+        status: "200",
+        message: "report all employees",
         content:[]
     })
 })

@@ -44,10 +44,18 @@ function successResponse(responseParams={
     return response;
 }
 
-function failedResponse(status = "", message ="") {
-  
+function errorResponse(status = "500", message ="terjadi kesalahan di server", code = 500, errors = "terjadi kesalahan di server") {
+
+    let response = {
+        errors: errors,
+        status: code,
+        message: message
+    }
+
+    return response;
+
 }
 
 export default {
-    successResponse, failedResponse
+    successResponse, errorResponse
 }

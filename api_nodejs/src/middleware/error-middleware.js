@@ -1,50 +1,83 @@
 import {ResponseError} from "../error/response-error.js";
 import {logger} from "../application/logging.js";
-import { json, request } from "express";
 
 const errorMiddleware = async (err, req, res, next) => {
 
     const requestBody = req.body ? JSON.stringify(req.body, null, 2) : 'No body';
 
     if (err.code === 'ER_PARSE_ERROR') {
-        logger.error(`Error: ${err.message} error-stack: (${err.stack})  "${req.originalUrl}" (${req.headers['user-agent']}) RequestID: ${req.requestId} Body: ${requestBody}`);
-        res.status(400).json({
-            errors: "terjadi kesalahan di server",
-            status: 400,
-            message: "terjadi kesalahan di server"
 
-        }).end();
+        logger.error(`Error: terjadi kesalahan di input data "${req.originalUrl}" (${req.headers['user-agent']})`, {
+            request_id:req.requestId,
+            error : {
+                message: err.message,
+                stack: err.stack,
+            },
+            body: requestBody,
+            location:"error-middleware"
+        });
+
+        res.status(400).json(response.errorResponse("400","terjadi kesalahan di input data",400,"terjadi kesalahan di input data")).end();
+
+
     } else if  (err instanceof ResponseError) {
 
-        logger.error(`Error: ${err.message} error-stack: (${err.stack})  "${req.originalUrl}" (${req.headers['user-agent']}) RequestID: ${req.requestId} Body: ${requestBody}`);
-        return res.status(err.status).json({
-            errors:  err.message,
-            status: err.status,
-            message:  err.message
-        }).end();
+        logger.error(`Error: "${req.originalUrl}" (${req.headers['user-agent']})`, {
+            request_id:req.requestId,
+            error : {
+                message: err.message,
+                stack: err.stack,
+            },
+            body: requestBody,
+            location:"error-middleware"
+
+        });
+
+        res.status(400).json(response.errorResponse(`${err.status}`, err.message,err.status, err.message)).end();
     } else if (err.message === '404') {
 
-        logger.error(`Error: ${err.message} error-stack: (${err.stack})  "${req.originalUrl}" (${req.headers['user-agent']}) RequestID: ${req.requestId} Body: ${requestBody}`);
-        res.status(400).json({
-            errors: "record not found",
-            status: 404,
-            message: "record not found"
-        }).end();
+        logger.error(`Error: record not found "${req.originalUrl}" (${req.headers['user-agent']})`, {
+            request_id:req.requestId,
+            error : {
+                message: err.message,
+                stack: err.stack,
+            },
+            body: requestBody,
+            location:"error-middleware"
+
+        });
+        res.status(404).json(response.errorResponse('404', "record not found",404, "record not found")).end();
+
     }else if (err.code === 'ER_BAD_FIELD_ERROR') {
 
-        logger.error(`Error: ${err.message} error-stack: (${err.stack})  "${req.originalUrl}" (${req.headers['user-agent']}) RequestID: ${req.requestId} Body: ${requestBody}`);
-        res.status(422).json({
-            errors: "params not found",
-            status: 422,
-            message: "params not found"
-        }).end();
+        logger.error(`Error: params not found "${req.originalUrl}" (${req.headers['user-agent']})`, {
+            request_id:req.requestId,
+            error : {
+                message: err.message,
+                stack: err.stack,
+            },
+            body: requestBody,
+            location:"error-middleware"
+
+        });
+
+        res.status(422).json(response.errorResponse('422', "params not found",422, "params not found")).end();
+
     } else {
-        logger.error(`Error-message: ${err.message} error-stack: (${err.stack}) "${req.originalUrl}" (${req.headers['user-agent']}) RequestID: ${req.requestId} Body: ${requestBody}`);
-        res.status(500).json({
-            errors: "terjadi kesalahan di server",
-            status: 500,
-            message: "terjadi kesalahan di server"
-        }).end();
+
+        logger.error(`Error: internal server error "${req.originalUrl}" (${req.headers['user-agent']})`, {
+            request_id:req.requestId,
+            error : {
+                message: err.message,
+                stack: err.stack,
+            },
+            body: requestBody,
+            location:"error-middleware"
+
+        });
+
+        res.status(500).json(response.errorResponse('500', "internal server error",500, "internal server error")).end();
+
     }
 
 }
