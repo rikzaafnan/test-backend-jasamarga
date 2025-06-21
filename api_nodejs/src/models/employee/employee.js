@@ -24,6 +24,10 @@ const findAllEmployee = async (filters = null,tx = false, reqRequestID = null) =
                 employee e
             WHERE
                1 = 1 
+            AND
+                e.deleted_at IS NULL
+            AND
+                e.deleted_by IS NULL
             
             ${sort}
 
@@ -34,8 +38,12 @@ const findAllEmployee = async (filters = null,tx = false, reqRequestID = null) =
                         SELECT 
                             COUNT(e.id) AS total_count
                         FROM  employee e
-                        WHERE
+                       WHERE
                             1 = 1 
+                        AND
+                            e.deleted_at IS NULL
+                        AND
+                            e.deleted_by IS NULL 
                         `;
 
     let results
@@ -140,6 +148,18 @@ const getOneEmployeeByID = async (employeeID= null,tx = false, reqRequestID = nu
             LEFT JOIN
                 employee_family ef ON e.id = ef.employee_id
             WHERE
+                e.deleted_at IS NULL
+            AND
+                e.deleted_by IS NULL
+            AND
+                ed.deleted_at IS NULL
+            AND
+                ed.deleted_by IS NULL
+            AND
+                ef.deleted_at IS NULL
+            AND
+                ef.deleted_by IS NULL
+            AND
                e.id = ?
             GROUP BY
             e.id, ep.id

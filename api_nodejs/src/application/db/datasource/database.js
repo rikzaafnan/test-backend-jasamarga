@@ -2,7 +2,6 @@ import { logger } from "../../logging.js";
 import {Sequelize} from "sequelize";
 import dotenv from "dotenv";
 dotenv.config();
-console.log(process.env.NODE_ENV)
 
 let sequelize
 // Option 3: Passing parameters separately (other dialects)
