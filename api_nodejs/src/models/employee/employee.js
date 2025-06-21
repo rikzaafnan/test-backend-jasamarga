@@ -461,8 +461,7 @@ const updateOneByID = async (
 
 
 const deleteOneByID = async (
-    outletAreaSpreadingID= null,
-    reqStorePotentialCategory=null,
+    employeeID= null,
     tx = false, reqRequestID = null) => {
 
     let content = {
@@ -470,22 +469,24 @@ const deleteOneByID = async (
         message : "failed"
     }
 
-    if (outletAreaSpreadingID === null) {
+    if (employeeID === null) {
         return content
     }
 
     let dataBinding = [
-        reqStorePotentialCategory,
-        outletAreaSpreadingID,
+        "admin",
+        helper.dateTimeDb(),
+        employeeID
     ]
 
     let sql = `
             UPDATE 
-                ${dbNameGrosir}.area_spreading_outlets aso
+                employee e
             SET
-                aso.store_potential_category = ?
+                deleted_by = ?,
+                deleted_at = ?
             WHERE 
-                aso.id = ?;
+                e.id = ?;
     `
 
     let results

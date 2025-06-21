@@ -1,5 +1,6 @@
 import {logger} from "../../application/logging.js";
 import employeeModel from "../../models/employee/employee.js";
+import {sequelize} from "../../application/db/datasource/database.js";
 
 const findAllEmployees = async(
     {
@@ -220,31 +221,7 @@ const updateOneByID = async(
 
 const deleteOneByID = async(
     {
-        reqOutletAreaSpreadingID = null,
-        reqDistrictID = null,
-        reqVillageID = null,
-        reqCityID = null,
-        reqOwnerOutletName= null,
-        reqAge= null,
-        reqGender= null,
-        reqPhone= null,
-        reqEmail= null,
-        reqOutletName= null,
-        reqLatitude= null,
-        reqLongitude= null,
-        reqAddress= null,
-        reqOutletCategory= null,
-        reqIsUsedAppPos= null,
-        reqAppPosName= null,
-        reqIsCustomerListFB= null,
-        reqDevices= null,
-        reqStoreManagement= null,
-        reqStoreResponse= null,
-        reqStoreCondition= null,
-        reqNote= null,
-        reqReason= null,
-        reqUserID = null,
-        reqDateFollowUp = null,
+        reqEmployeeID = null,
         reqRequestID = null
     } = {}) => {
     let content = {
@@ -252,10 +229,14 @@ const deleteOneByID = async(
         statusCode:500,
         message : "failed"
     }
+
+    const tx = await sequelize.transaction();
+
     try {
 
-        let results = await areaSpreadingAgentModel.getOneOutletAreaSpreadingByID(reqOutletAreaSpreadingID,false,reqRequestID)
+        let results = await employeeModel.deleteOneByID(reqEmployeeID,tx,reqRequestID)
         if (results.data === null) {
+            await tx.Rollback()
             content.data = null
             content.message = "data not found"
             content.statusCode = 404
@@ -263,61 +244,8 @@ const deleteOneByID = async(
             return content
 
         }
-
-        let device = null
-        if (reqDevices !== null && reqDevices !== undefined) {
-            if (Array.isArray(reqDevices)) {
-                if (reqDevices.length > 0) {
-                    device = reqDevices.join(",");
-                }
-            }
-        }
-
-        let storeCondition = null
-        if (reqStoreCondition !== null && reqStoreCondition !== undefined) {
-            if (Array.isArray(reqStoreCondition)) {
-                if (reqStoreCondition.length > 0) {
-                    storeCondition = reqStoreCondition.join(",");
-                }
-            }
-        }
-
-        let dtoUpdateData = {
-            reqDistrictID:reqDistrictID,
-            reqVillageID:reqVillageID,
-            reqCityID:reqCityID,
-            reqOwnerOutletName:reqOwnerOutletName,
-            reqAge:reqAge,
-            reqGender:reqGender,
-            reqPhone:reqPhone,
-            reqEmail:reqEmail,
-            reqOutletName:reqOutletName,
-            reqLatitude:reqLatitude,
-            reqLongitude:reqLongitude,
-            reqAddress:reqAddress,
-            reqOutletCategory:reqOutletCategory,
-            reqIsUsedAppPos:reqIsUsedAppPos,
-            reqAppPosName:reqAppPosName,
-            reqIsCustomerListFB:reqIsCustomerListFB,
-            reqDevices:device,
-            reqStoreManagement:reqStoreManagement,
-            reqStoreResponse:reqStoreResponse,
-            reqStoreCondition:storeCondition,
-            reqNote:reqNote,
-            reqReason:reqReason,
-            reqUserID :reqUserID,
-            reqDateFollowUp :reqDateFollowUp,
-        }
-
-        let updatedData = await areaSpreadingAgentModel.updateOneOutletAreaSpreadingByID(reqOutletAreaSpreadingID,dtoUpdateData,false, reqRequestID)
-        if (updatedData.data === null) {
-            content.data = null
-            content.message = "data not found"
-            content.statusCode = 404
-
-            return content
-
-        }
+        
+        await tx.Rollback()
 
         content.data = results.data
         content.message = "success"
