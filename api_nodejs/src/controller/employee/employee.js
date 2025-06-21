@@ -73,8 +73,62 @@ const findAll = async(req, res, next) => {
 const create = async(req, res, next) => {
     try {
 
+        const validationReq = Joi.object({
+            name: Joi.string().required(),
+            nik: Joi.string().required(),
+            is_active: Joi.boolean().required(),
+            start_date: Joi.date().required(),
+            end_date: Joi.date().iso().required(),
+            place_of_birth: Joi.string().required(),
+            date_of_birth: Joi.date().iso().required(), 
+            gender: Joi.string().valid('Laki-Laki', 'Perempuan').required(),
+            is_married: Joi.boolean().required(),
+            profile_picture: Joi.string().uri().allow(null, ''),
+            educations: Joi.array().items(
+                Joi.object({
+                    name: Joi.string().required(),
+                    level: Joi.string().valid('Tk', 'Sd', 'Smp', 'Sma', 'Strata 1', 'Strata 2', 'Doktor', 'Profesor').required().required(),
+                    description: Joi.string().optional()
+                })
+            ).optional(),
+
+            families: Joi.array().items(
+                Joi.object({
+                name: Joi.string().required(),
+                identifier: Joi.string().required(),
+                job: Joi.string().required(),
+                place_of_birth: Joi.string().required(),
+                date_of_birth: Joi.date().iso().required(), 
+                religion: Joi.string().valid('Islam', 'Katolik', 'Buda', 'Protestan', 'Konghucu').required(),
+                is_life: Joi.boolean().required(),
+                is_divorced: Joi.boolean().required(),
+                relation_status: Joi.string().valid('Istri', 'Suami', 'Anak', 'Anak Sambung').required()
+            })
+            ).optional()
+
+        });
+
+        let validationData = validateJoi.validateReq(validationReq, req.body)
+
+        let results = await employeeSvc.createEmployee({reqBody:validationData, reqRequestID:req.requestId})
+        if (results.data === null) {
+            let statusCode = 500
+            let message = "internal server error"
+            if (results.statusCode !== 500) {
+                statusCode = results.statusCode
+                message = results.message
+            }
+
+            let responseParams={
+                status : statusCode,
+                content : [],
+                message : message,
+            }
+            return res.status(responseParams.status).json(response.successResponse(responseParams));
+        }
+
         let responseParams={
-            status : 200,
+            status : 201,
             content : [],
             message : "success",
         }

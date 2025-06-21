@@ -271,33 +271,9 @@ const deleteOneByID = async(
 
 }
 
-const createEmplloyee = async(
+const createEmployee = async(
     {
-        reqOutletAreaSpreadingID = null,
-        reqDistrictID = null,
-        reqVillageID = null,
-        reqCityID = null,
-        reqOwnerOutletName= null,
-        reqAge= null,
-        reqGender= null,
-        reqPhone= null,
-        reqEmail= null,
-        reqOutletName= null,
-        reqLatitude= null,
-        reqLongitude= null,
-        reqAddress= null,
-        reqOutletCategory= null,
-        reqIsUsedAppPos= null,
-        reqAppPosName= null,
-        reqIsCustomerListFB= null,
-        reqDevices= null,
-        reqStoreManagement= null,
-        reqStoreResponse= null,
-        reqStoreCondition= null,
-        reqNote= null,
-        reqReason= null,
-        reqUserID = null,
-        reqDateFollowUp = null,
+        reqBody = null,
         reqRequestID = null
     } = {}) => {
     let content = {
@@ -307,72 +283,22 @@ const createEmplloyee = async(
     }
     try {
 
-        let results = await areaSpreadingAgentModel.getOneOutletAreaSpreadingByID(reqOutletAreaSpreadingID,false,reqRequestID)
-        if (results.data === null) {
-            content.data = null
-            content.message = "data not found"
-            content.statusCode = 404
+        console.log("reqBody", reqBody)
 
-            return content
-
+        // insert employee
+        let insertEmployeeReq = {
+            reqNIK : reqBody.nik,
+            reqFullName : reqBody.fullName,
         }
 
-        let device = null
-        if (reqDevices !== null && reqDevices !== undefined) {
-            if (Array.isArray(reqDevices)) {
-                if (reqDevices.length > 0) {
-                    device = reqDevices.join(",");
-                }
-            }
-        }
+        // insert employee profile
 
-        let storeCondition = null
-        if (reqStoreCondition !== null && reqStoreCondition !== undefined) {
-            if (Array.isArray(reqStoreCondition)) {
-                if (reqStoreCondition.length > 0) {
-                    storeCondition = reqStoreCondition.join(",");
-                }
-            }
-        }
+        // insert educations
 
-        let dtoUpdateData = {
-            reqDistrictID:reqDistrictID,
-            reqVillageID:reqVillageID,
-            reqCityID:reqCityID,
-            reqOwnerOutletName:reqOwnerOutletName,
-            reqAge:reqAge,
-            reqGender:reqGender,
-            reqPhone:reqPhone,
-            reqEmail:reqEmail,
-            reqOutletName:reqOutletName,
-            reqLatitude:reqLatitude,
-            reqLongitude:reqLongitude,
-            reqAddress:reqAddress,
-            reqOutletCategory:reqOutletCategory,
-            reqIsUsedAppPos:reqIsUsedAppPos,
-            reqAppPosName:reqAppPosName,
-            reqIsCustomerListFB:reqIsCustomerListFB,
-            reqDevices:device,
-            reqStoreManagement:reqStoreManagement,
-            reqStoreResponse:reqStoreResponse,
-            reqStoreCondition:storeCondition,
-            reqNote:reqNote,
-            reqReason:reqReason,
-            reqUserID :reqUserID,
-            reqDateFollowUp :reqDateFollowUp,
-        }
+        // insert families
+        
 
-        let updatedData = await areaSpreadingAgentModel.updateOneOutletAreaSpreadingByID(reqOutletAreaSpreadingID,dtoUpdateData,false, reqRequestID)
-        if (updatedData.data === null) {
-            content.data = null
-            content.message = "data not found"
-            content.statusCode = 404
-
-            return content
-
-        }
-
-        content.data = results.data
+        content.data = 1
         content.message = "success"
         content.statusCode = 200
 
@@ -397,5 +323,5 @@ const createEmplloyee = async(
 }
 
 export default {
-    findAllEmployees, getOneByID, createEmplloyee, updateOneByID, deleteOneByID
+    findAllEmployees, getOneByID, createEmployee, updateOneByID, deleteOneByID
 }
