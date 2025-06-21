@@ -1,0 +1,7 @@
+/api_nodejs/node_modules
+/api_nodejs/.env
+/api_nodejs/logs/
+# webstorm
+/api_nodejs/.idea/
+/api_nodejs/.vscode
+/api_nodejs/config/config.json
