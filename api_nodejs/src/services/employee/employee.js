@@ -1,5 +1,8 @@
 import {logger} from "../../application/logging.js";
 import employeeModel from "../../models/employee/employee.js";
+import employeeProfileModel from "../../models/employee/employee-profile.js";
+import employeeEducationModel from "../../models/employee/education.js";
+import employeeFamilyModel from "../../models/employee/family.js";
 import {sequelize} from "../../application/db/datasource/database.js";
 
 const findAllEmployees = async(
@@ -276,27 +279,186 @@ const createEmployee = async(
         reqBody = null,
         reqRequestID = null
     } = {}) => {
+
     let content = {
         data : null,
         statusCode:500,
         message : "failed"
     }
+
+    const tx = await sequelize.transaction();
+
     try {
 
-        console.log("reqBody", reqBody)
+        let employeeID = null
+        let runOnPromises = []
 
         // insert employee
         let insertEmployeeReq = {
             reqNIK : reqBody.nik,
-            reqFullName : reqBody.fullName,
+            reqName : reqBody.name,
+            reqIsActive : reqBody.is_active,
+            reqIsStartDate : reqBody.start_date,
+            reqIsEndDate : reqBody.end_date,
+            reqCreatedBy: "admin",
+        }
+        let insertEmployeeResult = await employeeModel.createEmployee(insertEmployeeReq,tx, reqRequestID)
+        if (insertEmployeeResult.data === null) {
+            await tx.rollback()
+            content.data = null
+            content.message = "data not found"
+            content.statusCode = 404
+
+            return content
+
         }
 
+        employeeID = insertEmployeeResult.data
+
         // insert employee profile
+        let insertEmployeeProfileReq = {
+            reqEmployeeID : employeeID,
+            reqPlaceOfBirth : reqBody.place_of_birth,
+            reqDateOfBirth : reqBody.date_of_birth,
+            reqGender : reqBody.gender,
+            reqIsMarried : reqBody.is_married,
+            reqProfilePicture : reqBody.profile_picture,
+            reqCreatedBy: "admin",
+        }
+        // let insertEmployeeProfileResult = await employeeProfileModel.createEmployeeProfile(insertEmployeeProfileReq,tx, reqRequestID)
+        // if (insertEmployeeProfileResult.data === null) {
+        //     await tx.rollback()
+        //     content.data = null
+        //     content.message = "data not found"
+        //     content.statusCode = 404
+
+        //     return content
+
+        // }
+
+        runOnPromises.push({
+                        name:"insertEmployeeProfileResult",
+                        promise: employeeProfileModel.createEmployeeProfile(insertEmployeeProfileReq,tx, reqRequestID)
+                    })
 
         // insert educations
+        if (reqBody.educations.length > 0) {
+            let insertEducations = []
+            for (const education of reqBody.educations) {
+                let insertEducation = {
+                    reqEmployeeID : employeeID,
+                    reqName:education.name,
+                    reqLevel:education.level,
+                    reqDescription:education.description,
+                    reqCreatedBy: "admin",
+                }
+                insertEducations.push(insertEducation)
+            }
+            // let insertEmployeeEducationResult =await employeeEducationModel.createEmployeeEducationBulks(insertEducations, employeeID, tx, reqRequestID)
+            // if (insertEmployeeEducationResult.data === null) {
+            //     await tx.rollback()
+            //     content.data = null
+            //     content.message = "data not found"
+            //     content.statusCode = 404
+
+            //     return content
+
+            // }
+
+            runOnPromises.push({
+                        name:"insertEmployeeEducationResult",
+                        promise: employeeEducationModel.createEmployeeEducationBulks(insertEducations, employeeID, tx, reqRequestID)
+                    })
+
+        }
 
         // insert families
-        
+        if (reqBody.families.length > 0) {
+            let insertFamilies = []
+            for (const family of reqBody.families) {
+                let insertFamily = {
+                    reqEmployeeID : employeeID,
+                    reqName:family.name,
+                    reqIdentifier:family.identifier,
+                    reqJob:family.job,
+                    reqPlaceOfBirth : family.place_of_birth,
+                    reqDateOfBirth : family.date_of_birth,
+                    reqReligion : family.religion,
+                    reqIsLife : family.is_life,
+                    reqIsDivorced : family.is_divorced,
+                    reqRelationStatus : family.relation_status,
+                    reqCreatedBy: "admin",
+                }
+                insertFamilies.push(insertFamily)
+            }
+
+            // let insertEmployeeFamilyResult =await employeeFamilyModel.createEmployeeFamilyBulks(insertFamilies, employeeID, tx, reqRequestID)
+            // if (insertEmployeeFamilyResult.data === null) {
+            //     await tx.rollback()
+            //     content.data = null
+            //     content.message = "data not found"
+            //     content.statusCode = 404
+
+            //     return content
+
+            // }
+
+            runOnPromises.push({
+                        name:"insertEmployeeFamilyResult",
+                        promise: employeeFamilyModel.createEmployeeFamilyBulks(insertFamilies, employeeID, tx, reqRequestID)
+                    })
+
+        }
+
+        try {
+            if (runOnPromises.length > 0) {
+                let index = 0
+                const results = await Promise.all(runOnPromises.map(p => p.promise));
+                for (const result of results) {
+
+                    if (result.data === null) {
+                        await tx.rollback()
+                        content.message = "failed insert data employee"
+
+                        logger.error("failed insert data employee", {
+                            request_id:reqRequestID,
+                            location:"services/employee/employee.createEmployee",
+                            method:`runOnPromises[${runOnPromises[index].name}]`,
+                            error:{
+                                name: error.name,
+                                message: error.message,
+                                stack: error.stack
+                            },
+                        });
+
+                        return content
+
+                    }
+
+                    index++
+
+                }
+
+            }
+        } catch (error) {
+            await tx.rollback();
+            content.message = "failed insert data employee"
+
+            logger.error("error promises", {
+                request_id:reqRequestID,
+                location:"services/employee/employee.createEmployee",
+                method:"createEmployee",
+                error:{
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                },
+            });
+
+            return content;
+        }
+
+        await tx.rollback()
 
         content.data = 1
         content.message = "success"
@@ -304,10 +466,10 @@ const createEmployee = async(
 
     } catch (e) {
 
-        logger.error("failed update outlet spreading", {
+        logger.error("failed create employee", {
             request_id:reqRequestID,
-            location:"services/agent/area-spreading.updateOutletSpreading",
-            method:"updateOutletSpreading",
+            location:"services/employee/employee.createEmployee",
+            method:"createEmployee",
             error:{
                 name: e.name,
                 message: e.message,

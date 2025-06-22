@@ -203,32 +203,13 @@ const getOneEmployeeByID = async (employeeID= null,tx = false, reqRequestID = nu
 }
 
 const createEmployee = async (
-    outletAreaSpreadingID= null,
     {
-        reqDistrictID = null,
-        reqVillageID = null,
-        reqCityID = null,
-        reqOwnerOutletName= null,
-        reqAge= null,
-        reqGender= null,
-        reqPhone= null,
-        reqEmail= null,
-        reqOutletName= null,
-        reqLatitude= null,
-        reqLongitude= null,
-        reqAddress= null,
-        reqOutletCategory= null,
-        reqIsUsedAppPos= null,
-        reqAppPosName= null,
-        reqIsCustomerListFB= null,
-        reqDevices= null,
-        reqStoreManagement= null,
-        reqStoreResponse= null,
-        reqStoreCondition= null,
-        reqNote= null,
-        reqReason= null,
-        reqUserID = null,
-        reqDateFollowUp = null,
+        reqNIK = null,
+        reqName = null,
+        reqIsActive = null,
+        reqIsStartDate = null,
+        reqIsEndDate = null,
+        reqCreatedBy =  "admin",
     } = {},
     tx = false, reqRequestID = null) => {
 
@@ -237,75 +218,26 @@ const createEmployee = async (
         message : "failed"
     }
 
-    if (outletAreaSpreadingID === null) {
-        return content
-    }
-
     let dataBinding = [
-        reqDistrictID,
-        reqVillageID,
-        reqCityID,
-        reqOwnerOutletName,
-        reqAge,
-        reqGender,
-        reqPhone,
-        reqEmail,
-        reqOutletName,
-        reqLatitude,
-        reqLongitude,
-        reqAddress,
-        reqOutletCategory,
-        reqIsUsedAppPos,
-        reqAppPosName,
-        reqIsCustomerListFB,
-        reqDevices,
-        reqStoreManagement,
-        reqStoreResponse,
-        reqStoreCondition,
-        reqNote,
-        reqReason,
-        reqDateFollowUp,
-        reqUserID,
-        helper.dateTimeDb(),
-        outletAreaSpreadingID
+        reqNIK,
+        reqName,
+        reqIsActive,
+        reqIsStartDate,
+        reqIsEndDate,
+        reqCreatedBy
     ]
 
     let sql = `
-            UPDATE 
-                ${dbNameGrosir}.area_spreading_outlets aso
-            SET
-                aso.district_id = ?,
-                aso.village_id = ?,
-                aso.city_id = ?,
-                aso.owner_outlet_name = ?,
-                aso.age = ?,
-                aso.gender = ?,
-                aso.phone = ?,
-                aso.email = ?,
-                aso.outlet_name = ?,
-                aso.latitude = ?,
-                aso.longitude = ?,
-                aso.address = ?,
-                aso.outlet_category = ?,
-                aso.is_used_app_pos = ?,
-                aso.app_pos_name = ?,
-                aso.is_customer_list_fb = ?,
-                aso.device = ?,
-                aso.store_management = ?,
-                aso.store_response = ?,
-                aso.store_condition = ?,
-                aso.notes = ?,
-                aso.reason = ?,
-                aso.follow_up_date = ?,
-                aso.updated_by=?,
-                aso.updated_at=?
-            WHERE 
-                aso.id = ?;
+            INSERT INTO 
+                employee
+            ( nik, name, is_active, start_date, end_date, created_by )
+                VALUES (
+                        ${dataBinding.map(() => '?').join(', ')}
+                    )
 
     `
 
-    let results
-    let metadata
+    let results, metadata
 
     try {
         if (tx) {
@@ -315,8 +247,8 @@ const createEmployee = async (
             [results, metadata] = await sequelize.query(sql,{replacements:dataBinding,});
         }
 
-        if (results.affectedRows > 0 ) {
-            content.data = results.affectedRows
+        if (metadata > 0 ) {
+            content.data = metadata
             content.message = "success"
         }
 
@@ -477,8 +409,6 @@ const updateOneByID = async (
     return content
 
 }
-
-
 
 const deleteOneByID = async (
     employeeID= null,
