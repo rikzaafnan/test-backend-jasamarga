@@ -9,10 +9,10 @@ module.exports = {
         merge_logs		: true,
         instances		: 1,
         exec_mode		: "cluster",
-		env             : {
-			"NODE_OPTIONS"  : "--max-old-space-size=2048 --max-new-space-size=2048",
-			"NODE_ENV"      : "development",
-			// "NODE_PORT":9494
-		}
+		// env             : {
+		// 	"NODE_OPTIONS"  : "--max-old-space-size=2048 --max-new-space-size=2048",
+		// 	"NODE_ENV"      : "development",
+		// 	// "NODE_PORT":9494
+		// }
 	}]
 }
