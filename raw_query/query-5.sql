@@ -63,5 +63,40 @@ GROUP BY
 -- Delete One EMPLOYEE by ID
 
 -- Insert One EMPLOYEE
+-- with db transaction
+BEGIN;
+INSERT INTO employee (nik, name, is_active, start_date, end_date, created_by)
+VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO 
+                employee_profile
+            ( employee_id, place_of_birth, date_of_birth, gender, is_married, prof_pict, created_by )
+                VALUES (
+                        ?, ?, ?,?, ?, ?, ?
+                    ) ;
+
+INSERT INTO education (
+                    employee_id,
+                    name,
+                    level,
+                    description,
+                    created_by,
+                    updated_by
+                ) VALUES (?, ?, ?, ?, ?, ?);
+
+INSERT INTO employee_family (
+                    employee_id,
+                    name,
+                    identifier,
+                    job,
+                    place_of_birth,
+                    date_of_birth,
+                    religion,
+                    is_life,
+                    is_divorced,
+                    relation_status,
+                    created_by,
+                    updated_by
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+COMMIT;
 
             

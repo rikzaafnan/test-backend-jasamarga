@@ -458,7 +458,7 @@ const createEmployee = async(
             return content;
         }
 
-        await tx.rollback()
+        await tx.commit()
 
         content.data = 1
         content.message = "success"
