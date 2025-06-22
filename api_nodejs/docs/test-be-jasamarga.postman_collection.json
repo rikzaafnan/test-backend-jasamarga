@@ -1,0 +1,144 @@
+{
+	"info": {
+		"_postman_id": "84fabf2d-ce9c-4c1e-9fe1-47a0bf3084a7",
+		"name": "test-be-jasamarga",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "19161438"
+	},
+	"item": [
+		{
+			"name": "employee",
+			"item": [
+				{
+					"name": "find all",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:4000/api/v1/employees"
+					},
+					"response": []
+				},
+				{
+					"name": "report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:4000/api/v1/reports/employees"
+					},
+					"response": []
+				},
+				{
+					"name": "create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\" : \"testing 2\",\n    \"nik\" : \"2323\",\n    \"is_active\": true,\n    \"start_date\":\"2025-01-01\",\n    \"end_date\":\"2025-01-01\",\n    \"place_of_birth\":\"malang\",\n    \"date_of_birth\":\"2025-01-01\",\n    \"gender\":\"Laki-Laki\",\n    \"is_married\": true,\n    \"profile_picture\":null,\n    \"educations\":[\n        {\n            \"name\" : \"sma 1\",\n            \"level\" : \"Sma\",\n            \"description\" : \"sma 1\"\n        },\n        {\n            \"name\" : \"universitas jagakarsa\",\n            \"level\" : \"Strata 1\",\n            \"description\" : \"Strata 1\"\n        }\n    ],\n    \"families\": [\n        {\n            \"name\" : \"clara\",\n            \"identifier\" : \"123321321\",\n            \"job\" : \"ibu rumah tangga\",\n            \"place_of_birth\":\"malang\",\n            \"date_of_birth\":\"2025-01-01\",\n            \"religion\" : \"Islam\",\n            \"is_life\" : true,\n            \"is_divorced\" : false,\n            \"relation_status\": \"Istri\"\n        },\n        {\n            \"name\" : \"stepi\",\n            \"identifier\" : \"23232\",\n            \"job\" : \"Pelajar\",\n            \"place_of_birth\":\"malang\",\n            \"date_of_birth\":\"2025-01-01\",\n            \"religion\" : \"Islam\",\n            \"is_life\" : true,\n            \"is_divorced\" : false,\n            \"relation_status\": \"Anak\"\n        }\n\n\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:4000/api/v1/employees"
+					},
+					"response": []
+				},
+				{
+					"name": "get by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/employees/:employee_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"employees",
+								":employee_id"
+							],
+							"variable": [
+								{
+									"key": "employee_id",
+									"value": "34"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\" : \"testing 2 update 3\",\n    \"nik\" : \"2323\",\n    \"is_active\": true,\n    \"start_date\":\"2025-01-01\",\n    \"end_date\":\"2025-01-01\",\n    \"place_of_birth\":\"malang\",\n    \"date_of_birth\":\"2025-01-01\",\n    \"gender\":\"Laki-Laki\",\n    \"is_married\": false,\n    \"profile_picture\":null,\n    \"educations\":[\n        {\n            \"name\" : \"sma 1 update\",\n            \"level\" : \"Sma\",\n            \"description\" : \"sma 1\"\n        },\n        {\n            \"name\" : \"universitas jagakarsa update\",\n            \"level\" : \"Strata 1\",\n            \"description\" : \"Strata 1\"\n        }\n    ],\n    \"families\": [\n        {\n            \"name\" : \"clara update\",\n            \"identifier\" : \"123321321\",\n            \"job\" : \"ibu rumah tangga\",\n            \"place_of_birth\":\"malang\",\n            \"date_of_birth\":\"2025-01-01\",\n            \"religion\" : \"Islam\",\n            \"is_life\" : true,\n            \"is_divorced\" : false,\n            \"relation_status\": \"Istri\"\n        },\n        {\n            \"name\" : \"stepi update\",\n            \"identifier\" : \"23232\",\n            \"job\" : \"Pelajar\",\n            \"place_of_birth\":\"malang\",\n            \"date_of_birth\":\"2025-01-01\",\n            \"religion\" : \"Islam\",\n            \"is_life\" : true,\n            \"is_divorced\" : false,\n            \"relation_status\": \"Anak\"\n        }\n\n\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/employees/:employee_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"employees",
+								":employee_id"
+							],
+							"variable": [
+								{
+									"key": "employee_id",
+									"value": "34"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/employees/:employee_id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"employees",
+								":employee_id"
+							],
+							"variable": [
+								{
+									"key": "employee_id",
+									"value": "32"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
