@@ -75,32 +75,14 @@ const createEmployeeProfile = async (
 }
 
 const updateOneByEmployeeID = async (
-    outletAreaSpreadingID= null,
     {
-        reqDistrictID = null,
-        reqVillageID = null,
-        reqCityID = null,
-        reqOwnerOutletName= null,
-        reqAge= null,
-        reqGender= null,
-        reqPhone= null,
-        reqEmail= null,
-        reqOutletName= null,
-        reqLatitude= null,
-        reqLongitude= null,
-        reqAddress= null,
-        reqOutletCategory= null,
-        reqIsUsedAppPos= null,
-        reqAppPosName= null,
-        reqIsCustomerListFB= null,
-        reqDevices= null,
-        reqStoreManagement= null,
-        reqStoreResponse= null,
-        reqStoreCondition= null,
-        reqNote= null,
-        reqReason= null,
-        reqUserID = null,
-        reqDateFollowUp = null,
+        reqEmployeeID = null,
+        reqPlaceOfBirth = null,
+        reqDateOfBirth = null,
+        reqGender = null,
+        reqIsMarried = null,
+        reqProfilePicture = null,
+        reqUpdatedBy =  "admin",
     } = {},
     tx = false, reqRequestID = null) => {
 
@@ -109,95 +91,55 @@ const updateOneByEmployeeID = async (
         message : "failed"
     }
 
-    if (outletAreaSpreadingID === null) {
-        return content
-    }
-
     let dataBinding = [
-        reqDistrictID,
-        reqVillageID,
-        reqCityID,
-        reqOwnerOutletName,
-        reqAge,
+        reqPlaceOfBirth,
+        reqDateOfBirth,
         reqGender,
-        reqPhone,
-        reqEmail,
-        reqOutletName,
-        reqLatitude,
-        reqLongitude,
-        reqAddress,
-        reqOutletCategory,
-        reqIsUsedAppPos,
-        reqAppPosName,
-        reqIsCustomerListFB,
-        reqDevices,
-        reqStoreManagement,
-        reqStoreResponse,
-        reqStoreCondition,
-        reqNote,
-        reqReason,
-        reqDateFollowUp,
-        reqUserID,
-        helper.dateTimeDb(),
-        outletAreaSpreadingID
+        reqIsMarried,
+        reqProfilePicture,
+        reqUpdatedBy,
+        helper.dateTimeDB(),
+        reqEmployeeID
+
     ]
 
     let sql = `
             UPDATE 
-                ${dbNameGrosir}.area_spreading_outlets aso
+                employee_profile
             SET
-                aso.district_id = ?,
-                aso.village_id = ?,
-                aso.city_id = ?,
-                aso.owner_outlet_name = ?,
-                aso.age = ?,
-                aso.gender = ?,
-                aso.phone = ?,
-                aso.email = ?,
-                aso.outlet_name = ?,
-                aso.latitude = ?,
-                aso.longitude = ?,
-                aso.address = ?,
-                aso.outlet_category = ?,
-                aso.is_used_app_pos = ?,
-                aso.app_pos_name = ?,
-                aso.is_customer_list_fb = ?,
-                aso.device = ?,
-                aso.store_management = ?,
-                aso.store_response = ?,
-                aso.store_condition = ?,
-                aso.notes = ?,
-                aso.reason = ?,
-                aso.follow_up_date = ?,
-                aso.updated_by=?,
-                aso.updated_at=?
+                place_of_birth = ?,
+                date_of_birth = ?,
+                gender = ?,
+                is_married = ?,
+                prof_pict = ?,
+                updated_by = ?,
+                updated_at = ?
             WHERE 
-                aso.id = ?;
+                employee_id = ?;
 
     `
 
-    let results
-    let metadata
+    let result, affectedRows
 
     try {
         if (tx) {
-            [results, metadata] = await sequelize.query(sql,{replacements:dataBinding, transaction: tx });
+            [result, affectedRows] = await sequelize.query(sql,{replacements:dataBinding, transaction: tx });
 
         } else {
-            [results, metadata] = await sequelize.query(sql,{replacements:dataBinding,});
+            [result, affectedRows] = await sequelize.query(sql,{replacements:dataBinding,});
         }
 
-        if (results.affectedRows > 0 ) {
-            content.data = results.affectedRows
-            content.message = "success"
+        if (affectedRows.rowCount > 0) {
+            content.data = affectedRows.rowCount
+            content.message =  "success"
         }
 
     } catch (error) {
 
-        logger.error("Database Error (updateOneByID)", {
+        logger.error("Database Error (updateOneByEmployeeID)", {
             request_id:reqRequestID,
-            location:"models/employee/employee.updateOneByID",
-            method:"updateOneByID",
+            location:"models/employee/employee-profile.updateOneByEmployeeID",
+            method:"updateOneByEmployeeID",
             error:{
                 name: error.name,
                 message: error.message,

@@ -373,6 +373,72 @@ const deleteOneByEmployeeID = async (
 
 }
 
+const deleteAllByEmployeeID = async (
+    employeeID= null,
+    deletedBy = "admin",
+    tx = false, reqRequestID = null) => {
+
+    let content = {
+        data : null,
+        message : "failed"
+    }
+
+    if (employeeID === null) {
+        return content
+    }
+
+    let dataBinding = [
+        deletedBy,
+        helper.dateTimeDB() ,
+        employeeID
+    ]
+
+    let sql = `
+            UPDATE 
+                employee_family
+            SET
+                deleted_by = ?,
+                deleted_at = ?
+            WHERE 
+                employee_id = ?;
+    `
+
+    let result
+    let affectedRows
+
+    try {
+         if (tx) {
+            [result, affectedRows] = await sequelize.query(sql,{replacements:dataBinding, transaction: tx });
+
+        } else {
+            [result, affectedRows] = await sequelize.query(sql,{replacements:dataBinding,});
+        }
+
+        if (affectedRows.rowCount > 0) {
+            content.data = affectedRows.rowCount
+            content.message =  "success"
+        }
+
+    } catch (error) {
+
+        logger.error("Database Error (deleteAllByEmployeeID)", {
+            request_id:reqRequestID,
+            location:"models/employee/family.deleteAllByEmployeeID",
+            method:"deleteAllByEmployeeID",
+            error:{
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+            },
+        });
+
+        content.message = "error";
+    }
+
+    return content
+
+}
+
 export default {
-    createEmployeeFamily, updateOneByID, deleteOneByEmployeeID, createEmployeeFamilyBulks
+    createEmployeeFamily, updateOneByID, deleteOneByEmployeeID, createEmployeeFamilyBulks, deleteAllByEmployeeID
 }

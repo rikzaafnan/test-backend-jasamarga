@@ -73,6 +73,13 @@ const getOneByID = async(
 
         }
 
+        if ((results.data.deleted_at !== null) || results.data.deleted_by !== null) {
+            content.data = null
+            content.message = "data not found"
+            content.statusCode = 404 
+            return content
+        }
+
         content.data = results.data
         content.message = "success"
         content.statusCode = 200
@@ -99,115 +106,259 @@ const getOneByID = async(
 
 const updateOneByID = async(
     {
-        reqOutletAreaSpreadingID = null,
-        reqDistrictID = null,
-        reqVillageID = null,
-        reqCityID = null,
-        reqOwnerOutletName= null,
-        reqAge= null,
-        reqGender= null,
-        reqPhone= null,
-        reqEmail= null,
-        reqOutletName= null,
-        reqLatitude= null,
-        reqLongitude= null,
-        reqAddress= null,
-        reqOutletCategory= null,
-        reqIsUsedAppPos= null,
-        reqAppPosName= null,
-        reqIsCustomerListFB= null,
-        reqDevices= null,
-        reqStoreManagement= null,
-        reqStoreResponse= null,
-        reqStoreCondition= null,
-        reqNote= null,
-        reqReason= null,
-        reqUserID = null,
-        reqDateFollowUp = null,
+        reqBody = null,
+        reqEmployeeID = null,
         reqRequestID = null
     } = {}) => {
+
     let content = {
         data : null,
         statusCode:500,
         message : "failed"
     }
+
+    const tx = await sequelize.transaction();
+
     try {
 
-        let results = await areaSpreadingAgentModel.getOneOutletAreaSpreadingByID(reqOutletAreaSpreadingID,false,reqRequestID)
-        if (results.data === null) {
+        let runOnPromises = []
+
+        // check employee
+        let employeeResult = await employeeModel.getOneEmployeeByID(reqEmployeeID,tx, reqRequestID)
+        if (employeeResult.data === null) {
+            await tx.rollback()
             content.data = null
             content.message = "data not found"
-            content.statusCode = 404
+            content.statusCode = 404 
+            return content
+        }
+
+        if ((employeeResult.data.deleted_at !== null) || employeeResult.data.deleted_by !== null) {
+            await tx.rollback()
+            content.data = null
+            content.message = "data not found"
+            content.statusCode = 404 
+            return content
+        }
+
+        // update employee
+        let updateEmployeeReq = {
+            reqNIK : reqBody.nik,
+            reqName : reqBody.name,
+            reqIsActive : reqBody.is_active,
+            reqIsStartDate : reqBody.start_date,
+            reqIsEndDate : reqBody.end_date,
+            reqUpdatedBy: "admin",
+        }
+        let updateEmployeeResult = await employeeModel.updateOneByID(reqEmployeeID, updateEmployeeReq,tx, reqRequestID)
+        if (updateEmployeeResult.data === null) {
+            await tx.rollback()
+            content.data = null
+            content.message = "failed update employee"
+            content.statusCode = 400
+
+            logger.error("failed update employee", {
+                request_id:reqRequestID,
+                location:"services/employee/employee.updateOneByID",
+                source : "models/employee/employee.updateOneByID",
+                method:"updateOneByID",
+            });
 
             return content
 
         }
 
-        let device = null
-        if (reqDevices !== null && reqDevices !== undefined) {
-            if (Array.isArray(reqDevices)) {
-                if (reqDevices.length > 0) {
-                    device = reqDevices.join(",");
+        // update employee profile
+        let updateEmployeeProfileReq = {
+            reqEmployeeID : reqEmployeeID,
+            reqPlaceOfBirth : reqBody.place_of_birth,
+            reqDateOfBirth : reqBody.date_of_birth,
+            reqGender : reqBody.gender,
+            reqIsMarried : reqBody.is_married,
+            reqProfilePicture : reqBody.profile_picture,
+            reqUpdatedBy: "admin",
+        }
+        // let updateEmployeeProfileResult = await employeeProfileModel.updateOneByEmployeeID(updateEmployeeProfileReq,tx, reqRequestID)
+        // if (updateEmployeeProfileResult.data === null) {
+        //     await tx.rollback()
+        //     content.data = null
+        //     content.message = "failed update employee"
+        //     content.statusCode = 404
+
+        //     return content
+
+        // }
+        runOnPromises.push({
+            name:"insertEmployupdateEmployeeProfileResulteeProfileResult",
+            promise: employeeProfileModel.updateOneByEmployeeID(updateEmployeeProfileReq,tx, reqRequestID)
+        })
+
+        // update educations
+        if (reqBody.educations.length > 0) {
+            if (employeeResult.data.educations.length > 0) {
+                // delete educations
+                let deleteAllEducationResults = await employeeEducationModel.deleteAllByEmployeeID(reqEmployeeID, "admin",tx, reqRequestID)
+                if (deleteAllEducationResults.data === null) {
+                    await tx.rollback()
+                    content.data = null
+                    content.message = "failed update employee"
+                    content.statusCode = 400
+
+                    logger.error("failed delete current education", {
+                        request_id:reqRequestID,
+                        location:"services/employee/employee.updateOneByID",
+                        source : "models/employee/education.deleteAllByEmployeeID",
+                        method:"updateOneByID",
+                    });
+
+                    return content
+
                 }
-            }
-        }
 
-        let storeCondition = null
-        if (reqStoreCondition !== null && reqStoreCondition !== undefined) {
-            if (Array.isArray(reqStoreCondition)) {
-                if (reqStoreCondition.length > 0) {
-                    storeCondition = reqStoreCondition.join(",");
+            }
+            let insertEducations = []
+            for (const education of reqBody.educations) {
+                let insertEducation = {
+                    reqEmployeeID : reqEmployeeID,
+                    reqName:education.name,
+                    reqLevel:education.level,
+                    reqDescription:education.description,
+                    reqCreatedBy: "admin",
                 }
+                insertEducations.push(insertEducation)
             }
-        }
+            // let insertEmployeeEducationResult =await employeeEducationModel.createEmployeeEducationBulks(insertEducations, reqEmployeeID, tx, reqRequestID)
+            // if (insertEmployeeEducationResult.data === null) {
+            //     await tx.rollback()
+            //     content.data = null
+            //     content.message = "failed update employee"
+            //     content.statusCode = 400
 
-        let dtoUpdateData = {
-            reqDistrictID:reqDistrictID,
-            reqVillageID:reqVillageID,
-            reqCityID:reqCityID,
-            reqOwnerOutletName:reqOwnerOutletName,
-            reqAge:reqAge,
-            reqGender:reqGender,
-            reqPhone:reqPhone,
-            reqEmail:reqEmail,
-            reqOutletName:reqOutletName,
-            reqLatitude:reqLatitude,
-            reqLongitude:reqLongitude,
-            reqAddress:reqAddress,
-            reqOutletCategory:reqOutletCategory,
-            reqIsUsedAppPos:reqIsUsedAppPos,
-            reqAppPosName:reqAppPosName,
-            reqIsCustomerListFB:reqIsCustomerListFB,
-            reqDevices:device,
-            reqStoreManagement:reqStoreManagement,
-            reqStoreResponse:reqStoreResponse,
-            reqStoreCondition:storeCondition,
-            reqNote:reqNote,
-            reqReason:reqReason,
-            reqUserID :reqUserID,
-            reqDateFollowUp :reqDateFollowUp,
-        }
+            //     return content
 
-        let updatedData = await areaSpreadingAgentModel.updateOneOutletAreaSpreadingByID(reqOutletAreaSpreadingID,dtoUpdateData,false, reqRequestID)
-        if (updatedData.data === null) {
-            content.data = null
-            content.message = "data not found"
-            content.statusCode = 404
+            // }
 
-            return content
+            runOnPromises.push({
+                name:"insertEmployeeEducationResult",
+                promise: employeeEducationModel.createEmployeeEducationBulks(insertEducations, reqEmployeeID, tx, reqRequestID)
+            })
 
         }
 
-        content.data = results.data
+        // update families
+        if (reqBody.families.length > 0) {
+            let insertFamilies = []
+            if (employeeResult.data.families.length > 0) {
+                // delete families
+                let deleteAllFamilyResults = await employeeFamilyModel.deleteAllByEmployeeID(reqEmployeeID, "admin",tx, reqRequestID)
+                if (deleteAllFamilyResults.data === null) {
+                    await tx.rollback()
+                    content.data = null
+                    content.message = "failed update employee"
+                    content.statusCode = 400
+
+                    logger.error("failed delete current family", {
+                        request_id:reqRequestID,
+                        location:"services/employee/employee.updateOneByID",
+                        source : "models/employee/family.deleteAllByEmployeeID",
+                        method:"updateOneByID",
+                    });
+
+                    return content
+
+                }
+
+            }
+            for (const family of reqBody.families) {
+                let insertFamily = {
+                    reqEmployeeID : reqEmployeeID,
+                    reqName:family.name,
+                    reqIdentifier:family.identifier,
+                    reqJob:family.job,
+                    reqPlaceOfBirth : family.place_of_birth,
+                    reqDateOfBirth : family.date_of_birth,
+                    reqReligion : family.religion,
+                    reqIsLife : family.is_life,
+                    reqIsDivorced : family.is_divorced,
+                    reqRelationStatus : family.relation_status,
+                    reqCreatedBy: "admin",
+                }
+                insertFamilies.push(insertFamily)
+            }
+
+            // let insertEmployeeFamilyResult =await employeeFamilyModel.createEmployeeFamilyBulks(insertFamilies, reqEmployeeID, tx, reqRequestID)
+            // if (insertEmployeeFamilyResult.data === null) {
+            //     await tx.rollback()
+            //     content.data = null
+            //     content.message = "failed update employee"
+            //     content.statusCode = 404
+
+            //     return content
+
+            // }
+
+            runOnPromises.push({
+                name:"insertEmployeeFamilyResult",
+                promise: employeeFamilyModel.createEmployeeFamilyBulks(insertFamilies, reqEmployeeID, tx, reqRequestID)
+            })
+
+        }
+
+        try {
+            if (runOnPromises.length > 0) {
+                let index = 0
+                const results = await Promise.all(runOnPromises.map(p => p.promise));
+                for (const result of results) {
+
+                    if (result.data === null) {
+                        await tx.rollback()
+                        content.message = "failed update employee"
+
+                        logger.error("failed update employee", {
+                            request_id:reqRequestID,
+                            location:"services/employee/employee.updateOneByID",
+                            method:`runOnPromises[${runOnPromises[index].name}]`,
+                        });
+
+                        return content
+
+                    }
+
+                    index++
+
+                }
+
+            }
+        } catch (error) {
+            await tx.rollback();
+            content.message = "failed update employee"
+
+            logger.error("error promises", {
+                request_id:reqRequestID,
+                location:"services/employee/employee.updateOneByID",
+                method:"updateOneByID",
+                error:{
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                },
+            });
+
+            return content;
+        }
+
+        await tx.commit()
+
+        content.data = 1
         content.message = "success"
         content.statusCode = 200
 
     } catch (e) {
 
-        logger.error("failed update outlet spreading", {
+        logger.error("failed update employee", {
             request_id:reqRequestID,
-            location:"services/agent/area-spreading.updateOutletSpreading",
-            method:"updateOutletSpreading",
+            location:"services/employee/employee.updateOneByID",
+            method:"updateOneByID",
             error:{
                 name: e.name,
                 message: e.message,
@@ -237,9 +388,29 @@ const deleteOneByID = async(
 
     try {
 
-        let results = await employeeModel.deleteOneByID(reqEmployeeID,tx,reqRequestID)
+
+        let employeeResult = await employeeModel.getOneEmployeeByID(reqEmployeeID,tx, reqRequestID)
+        if (employeeResult.data === null) {
+            await tx.rollback()
+            content.data = null
+            content.message = "data not found"
+            content.statusCode = 404
+
+            return content
+
+        }
+
+        if ((employeeResult.data.deleted_at !== null) || employeeResult.data.deleted_by !== null) {
+            await tx.rollback()
+            content.data = null
+            content.message = "data not found"
+            content.statusCode = 404 
+            return content
+        }
+
+        let results = await employeeModel.deleteOneByID(reqEmployeeID,"admin",tx,reqRequestID)
         if (results.data === null) {
-            await tx.Rollback()
+            await tx.rollback()
             content.data = null
             content.message = "data not found"
             content.statusCode = 404
@@ -248,7 +419,7 @@ const deleteOneByID = async(
 
         }
         
-        await tx.Rollback()
+        await tx.commit()
 
         content.data = results.data
         content.message = "success"
@@ -256,10 +427,10 @@ const deleteOneByID = async(
 
     } catch (e) {
 
-        logger.error("failed update outlet spreading", {
+        logger.error("failed delete employee", {
             request_id:reqRequestID,
-            location:"services/agent/area-spreading.updateOutletSpreading",
-            method:"updateOutletSpreading",
+            location:"services/employee/employee.deleteOneByID",
+            method:"deleteOneByID",
             error:{
                 name: e.name,
                 message: e.message,

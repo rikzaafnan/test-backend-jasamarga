@@ -296,8 +296,9 @@ const updateOneByID = async (
 
 }
 
-const deleteOneByEmployeeID = async (
+const deleteAllByEmployeeID = async (
     employeeID= null,
+    deletedBy = "admin",
     tx = false, reqRequestID = null) => {
 
     let content = {
@@ -310,43 +311,43 @@ const deleteOneByEmployeeID = async (
     }
 
     let dataBinding = [
-        "admin",
-        helper.dateTimeDb(),
+        deletedBy,
+        helper.dateTimeDB() ,
         employeeID
     ]
 
     let sql = `
             UPDATE 
-                employee e
+                education
             SET
                 deleted_by = ?,
                 deleted_at = ?
             WHERE 
-                e.id = ?;
+                employee_id = ?;
     `
 
-    let results
-    let metadata
+    let result
+    let affectedRows
 
     try {
-        if (tx) {
-            [results, metadata] = await sequelize.query(sql,{replacements:dataBinding, transaction: tx });
+         if (tx) {
+            [result, affectedRows] = await sequelize.query(sql,{replacements:dataBinding, transaction: tx });
 
         } else {
-            [results, metadata] = await sequelize.query(sql,{replacements:dataBinding,});
+            [result, affectedRows] = await sequelize.query(sql,{replacements:dataBinding,});
         }
 
-        if (results.affectedRows > 0 ) {
-            content.data = results.affectedRows
-            content.message = "success"
+        if (affectedRows.rowCount > 0) {
+            content.data = affectedRows.rowCount
+            content.message =  "success"
         }
 
     } catch (error) {
 
-        logger.error("Database Error (deleteOneByID)", {
+        logger.error("Database Error (deleteAllByEmployeeID)", {
             request_id:reqRequestID,
-            location:"models/employee/employee.deleteOneByID",
-            method:"deleteOneByID",
+            location:"models/employee/education.deleteAllByEmployeeID",
+            method:"deleteAllByEmployeeID",
             error:{
                 name: error.name,
                 message: error.message,
@@ -362,5 +363,5 @@ const deleteOneByEmployeeID = async (
 }
 
 export default {
-    createEmployeeEducation, updateOneByID, deleteOneByEmployeeID, createEmployeeEducationBulks
+    createEmployeeEducation, updateOneByID, deleteAllByEmployeeID, createEmployeeEducationBulks
 }

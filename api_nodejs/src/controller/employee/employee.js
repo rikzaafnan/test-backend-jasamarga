@@ -3,6 +3,7 @@ import {logger} from "../../application/logging.js";
 import Joi from 'joi'
 import validateJoi 	from '../../validation/validation.js'
 import employeeSvc from "../../services/employee/employee.js";
+import e from "express";
 
 const findAll = async(req, res, next) => {
     try {
@@ -46,7 +47,7 @@ const findAll = async(req, res, next) => {
             message : "success",
             totalData : parseInt(results.data.total_data),
             totalContent : results.data.content.length,
-            page:filters.page,
+            page:((parseInt(validationData.page) - 1) * parseInt(validationData.limit) ) + 1,
             limit:filters.limit,
             sort:null,
             filter:null
@@ -205,26 +206,75 @@ const getOneByID = async(req, res, next) => {
 const updateByID = async(req, res, next) => {
     try {
 
+        let employeeID = parseInt(req.params.employeeID);
+
         const validationReq = Joi.object({
-            employeeID: Joi.number().required(),
+            name: Joi.string().required(),
+            nik: Joi.string().required(),
+            is_active: Joi.boolean().required(),
+            start_date: Joi.date().required(),
+            end_date: Joi.date().iso().required(),
+            place_of_birth: Joi.string().required(),
+            date_of_birth: Joi.date().iso().required(), 
+            gender: Joi.string().valid('Laki-Laki', 'Perempuan').required(),
+            is_married: Joi.boolean().required(),
+            profile_picture: Joi.string().uri().allow(null, ''),
+            educations: Joi.array().items(
+                Joi.object({
+                    name: Joi.string().required(),
+                    level: Joi.string().valid('Tk', 'Sd', 'Smp', 'Sma', 'Strata 1', 'Strata 2', 'Doktor', 'Profesor').required().required(),
+                    description: Joi.string().optional()
+                })
+            ).optional(),
+
+            families: Joi.array().items(
+                Joi.object({
+                name: Joi.string().required(),
+                identifier: Joi.string().required(),
+                job: Joi.string().required(),
+                place_of_birth: Joi.string().required(),
+                date_of_birth: Joi.date().iso().required(), 
+                religion: Joi.string().valid('Islam', 'Katolik', 'Buda', 'Protestan', 'Konghucu').required(),
+                is_life: Joi.boolean().required(),
+                is_divorced: Joi.boolean().required(),
+                relation_status: Joi.string().valid('Istri', 'Suami', 'Anak', 'Anak Sambung').required()
+            })
+            ).optional()
+
         });
 
-        let validationData = validateJoi.validateReq(validationReq, req.params)
+        let validationData = validateJoi.validateReq(validationReq, req.body)
 
-         let responseParams={
-            status : 200,
-            content :[],
-            message : "success",
+        let results = await employeeSvc.updateOneByID({reqBody:validationData,reqEmployeeID:employeeID, reqRequestID:req.requestId})
+        if (results.data === null) {
+            let statusCode = 500
+            let message = "internal server error"
+            if (results.statusCode !== 500) {
+                statusCode = results.statusCode
+                message = results.message
+            }
+
+            let responseParams={
+                status : statusCode,
+                content : [],
+                message : message,
+            }
+            return res.status(responseParams.status).json(response.successResponse(responseParams));
         }
 
+        let responseParams={
+            status : 200,
+            content : [],
+            message : "success",
+        }
 
         res.status(responseParams.status).json(response.successResponse(responseParams));
     } catch (e) {
 
-        logger.error("failed update employee by id", {
+        logger.error("failed create employee", {
             request_id:req.requestId,
-            location:"controller/employee/employee.updateByID",
-            method:"updateByID",
+            location:"controller/employee/employee.create",
+            method:"create",
             error:{
                 name: e.name,
                 message: e.message,
@@ -241,16 +291,33 @@ const deleteByID = async(req, res, next) => {
 
         let employeeID = parseInt(req.params.employeeID);
 
+        let results = await employeeSvc.deleteOneByID({reqEmployeeID:employeeID, reqRequestID:req.requestId})
+        if (results.data === null) {
+            let statusCode = 500
+            let message = "internal server error"
+            if (results.statusCode !== 500) {
+                statusCode = results.statusCode
+                message = results.message
+            }
+
+            let responseParams={
+                status : statusCode,
+                content : [],
+                message : message,
+            }
+            return res.status(responseParams.status).json(response.successResponse(responseParams));
+        }
+
         let responseParams={
             status : 200,
             content : [],
-            message : "success update data outlet spreading",
+            message : "success delete data",
         }
 
         res.status(responseParams.status).json(response.successResponse(responseParams));
     } catch (e) {
 
-        logger.error("failed delewte employee by id", {
+        logger.error("failed delete employee by id", {
             request_id:req.requestId,
             location:"controller/employee/employee.deleteByID",
             method:"deleteByID",
