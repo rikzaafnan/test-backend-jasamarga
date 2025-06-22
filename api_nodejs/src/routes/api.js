@@ -1,5 +1,6 @@
 import express, { json } from "express";
 import employeeController from "../controller/employee/employee.js";
+import reportEmployeeController from "../controller/report/employee.js";
 
 const apiRouter = new express();
 
@@ -13,13 +14,7 @@ apiRouter.put('/employees/:employeeID' ,employeeController.updateByID)
 
 apiRouter.delete('/employees/:employeeID' ,employeeController.deleteByID)
 
-apiRouter.get('/reports/employees' ,(req, res, next) => {
-    res.status(200).json({
-        status: "200",
-        message: "report all employees",
-        content:[]
-    })
-})
+apiRouter.get('/reports/employees' ,reportEmployeeController.getReport)
 
 export {
     apiRouter

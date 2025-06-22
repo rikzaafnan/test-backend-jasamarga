@@ -33,7 +33,7 @@ const findAllEmployees = async(
 
     } catch (e) {
 
-        logger.error("failed get all outlet area spreading", {
+        logger.error("failed get all employee", {
             request_id:reqRequestID,
             location:"services/employee/employee.findAllEmployees",
             method:"findAllEmployees",

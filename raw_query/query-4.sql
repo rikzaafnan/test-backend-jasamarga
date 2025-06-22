@@ -1,19 +1,4 @@
-import {sequelize} from "../../application/db/datasource/database.js";
-import {logger} from "../../application/logging.js";
-import helper from "../../helper/helper.js";
-import moment from "moment-timezone";
-
-const getReportEmployee = async (tx = false, reqRequestID = null) => {
-
-    let content = {
-        data : null,
-        message : "failed"
-    }
-
-    let dataBinding = []
-
-    let sql = `
-        WITH top_education AS (
+ WITH top_education AS (
             SELECT DISTINCT ON (ed.employee_id)
                 ed.employee_id,
                 ed.name AS school_name,
@@ -58,45 +43,3 @@ const getReportEmployee = async (tx = false, reqRequestID = null) => {
             e.deleted_at IS NULL
         AND 
             e.deleted_by IS NULL;
-            
-        `
-
-    let results
-    let metadata
-
-    try {
-        if (tx) {
-            [results, metadata] = await sequelize.query(sql,{replacements:dataBinding, transaction: tx });
-
-        } else {
-            [results, metadata] = await sequelize.query(sql,{replacements:dataBinding,});
-        }
-
-        if (results.length > 0 ) {
-            content.data = results
-            content.message = "success"
-        }
-
-    } catch (error) {
-
-        logger.error("Database Error (getReportEmployee)", {
-            request_id:reqRequestID,
-            location:"models/report/employee.getReportEmployee",
-            method:"getReportEmployee",
-            error:{
-                name: error.name,
-                message: error.message,
-                stack: error.stack
-            },
-        });
-
-        content.message = "error";
-    }
-
-    return content
-
-}
-
-export default {
-    getReportEmployee
-}
