@@ -178,16 +178,7 @@ const updateOneByID = async(
             reqProfilePicture : reqBody.profile_picture,
             reqUpdatedBy: "admin",
         }
-        // let updateEmployeeProfileResult = await employeeProfileModel.updateOneByEmployeeID(updateEmployeeProfileReq,tx, reqRequestID)
-        // if (updateEmployeeProfileResult.data === null) {
-        //     await tx.rollback()
-        //     content.data = null
-        //     content.message = "failed update employee"
-        //     content.statusCode = 404
-
-        //     return content
-
-        // }
+       
         runOnPromises.push({
             name:"insertEmployupdateEmployeeProfileResulteeProfileResult",
             promise: employeeProfileModel.updateOneByEmployeeID(updateEmployeeProfileReq,tx, reqRequestID)
@@ -227,16 +218,6 @@ const updateOneByID = async(
                 }
                 insertEducations.push(insertEducation)
             }
-            // let insertEmployeeEducationResult =await employeeEducationModel.createEmployeeEducationBulks(insertEducations, reqEmployeeID, tx, reqRequestID)
-            // if (insertEmployeeEducationResult.data === null) {
-            //     await tx.rollback()
-            //     content.data = null
-            //     content.message = "failed update employee"
-            //     content.statusCode = 400
-
-            //     return content
-
-            // }
 
             runOnPromises.push({
                 name:"insertEmployeeEducationResult",
@@ -285,17 +266,6 @@ const updateOneByID = async(
                 }
                 insertFamilies.push(insertFamily)
             }
-
-            // let insertEmployeeFamilyResult =await employeeFamilyModel.createEmployeeFamilyBulks(insertFamilies, reqEmployeeID, tx, reqRequestID)
-            // if (insertEmployeeFamilyResult.data === null) {
-            //     await tx.rollback()
-            //     content.data = null
-            //     content.message = "failed update employee"
-            //     content.statusCode = 404
-
-            //     return content
-
-            // }
 
             runOnPromises.push({
                 name:"insertEmployeeFamilyResult",
@@ -496,16 +466,6 @@ const createEmployee = async(
             reqProfilePicture : reqBody.profile_picture,
             reqCreatedBy: "admin",
         }
-        // let insertEmployeeProfileResult = await employeeProfileModel.createEmployeeProfile(insertEmployeeProfileReq,tx, reqRequestID)
-        // if (insertEmployeeProfileResult.data === null) {
-        //     await tx.rollback()
-        //     content.data = null
-        //     content.message = "data not found"
-        //     content.statusCode = 404
-
-        //     return content
-
-        // }
 
         runOnPromises.push({
                         name:"insertEmployeeProfileResult",
@@ -525,16 +485,6 @@ const createEmployee = async(
                 }
                 insertEducations.push(insertEducation)
             }
-            // let insertEmployeeEducationResult =await employeeEducationModel.createEmployeeEducationBulks(insertEducations, employeeID, tx, reqRequestID)
-            // if (insertEmployeeEducationResult.data === null) {
-            //     await tx.rollback()
-            //     content.data = null
-            //     content.message = "data not found"
-            //     content.statusCode = 404
-
-            //     return content
-
-            // }
 
             runOnPromises.push({
                         name:"insertEmployeeEducationResult",
@@ -562,17 +512,6 @@ const createEmployee = async(
                 }
                 insertFamilies.push(insertFamily)
             }
-
-            // let insertEmployeeFamilyResult =await employeeFamilyModel.createEmployeeFamilyBulks(insertFamilies, employeeID, tx, reqRequestID)
-            // if (insertEmployeeFamilyResult.data === null) {
-            //     await tx.rollback()
-            //     content.data = null
-            //     content.message = "data not found"
-            //     content.statusCode = 404
-
-            //     return content
-
-            // }
 
             runOnPromises.push({
                         name:"insertEmployeeFamilyResult",
